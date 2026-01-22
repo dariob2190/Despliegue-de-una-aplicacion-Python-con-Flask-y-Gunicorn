@@ -1,0 +1,376 @@
+Despliegue
+----------
+.. warning::
+
+   Si estas realizando esta parte en la provisión de Vagrant, **no
+   todo** debes realizarlo como administrador, ya que crearíamos el
+   entorno virtual en la carpeta de ``root``. Crearemos un bloque de
+   provisión que se ejecutará como el usuario ``vagrant``, utilizando
+   el parámetro ``privileged``:
+
+   .. code-block:: ruby
+
+      config.vm.provision "shell", privileged: false, inline: <<-SHELL
+         // poner aquí el código
+      SHELL
+
+   Para tenerlo claro diferenciaremos los comandos que se realizarán
+   como administrador poniendo ``sudo`` o no.
+
+Instalamos el gestor de paquetes de Python ``pip``:
+
+.. code-block:: console
+
+   sudo apt-get update && sudo apt-get install -y python3-pip
+
+Instalamos el paquete ``pipenv`` para gestionar los entornos
+virtuales:
+
+
+.. code-block:: console
+
+   pip3 install pipenv
+
+Y comprobamos que está instalado correctamente mostrando su versión:
+
+.. code-block:: console
+
+   PATH=$PATH:/home/$USER/.local/bin
+   pipenv --version
+
+Después instalaremos el paquete ``python-dotenv`` para cargar las
+variables de entorno.
+
+.. code-block:: console
+
+  pip3 install python-dotenv
+
+Creamos el directorio en el que almacenaremos nuestro proyecto:
+
+.. code-block:: console
+   :caption: Sustituir ``àpp`` por el nombre de la aplicación
+
+   sudo mkdir -p /var/www/app
+
+Al crearlo con ``sudo``, los permisos pertenecen a ``root``, por lo
+que hay que cambiarlo para que el dueño sea nuestro usuario y
+pertenezca al grupo ``www-data``, el usuario usado por defecto por el
+servidor web para ejecutarse:
+
+.. code-block:: console
+
+   sudo chown -R $USER:www-data /var/www/app
+
+Establecemos los permisos adecuados a este directorio, para que pueda
+ser leído por todo el mundo:
+
+.. code-block:: console
+
+   sudo chmod -R 775 /var/www/app
+
+.. warning::
+
+   Es indispensable asignar estos permisos, de otra forma obtendríamos
+   un error al acceder a la aplicación cuando pongamos en marcha Nginx.
+
+Dentro del directorio de nuestra aplicación, creamos un archivo oculto
+``.env`` que contendrá las variables de entorno necesarias. Editamos
+el archivo y añadimos las variables, indicando cuál es el archivo
+``.py`` de la aplicación y el entorno, que en nuestro caso será
+producción:
+
+.. code-block:: bash
+   :caption: Contenido del fichero ``/var/www/app/.env``
+
+   FLASK_APP=wsgi.py
+   FLASK_ENV=production
+
+.. note:
+
+   En el mundo laboral real, se supone que la aplicación previamente
+   ha pasado por los entornos de *dev*, *test* y *preprod* para el
+   desarrollo y prueba de la misma, antes de pasarla a producción.
+
+Iniciamos ahora nuestro entorno virtual. *Pipenv* cargará las variables
+de entorno desde el fichero ``.env`` de forma automática:
+
+.. code-block:: console
+   :caption: Ejecutamos el comando `pipenv shell` en la ruta que aparece
+
+   vagrant@bullseye:/var/www/app$ pipenv shell
+
+Veremos que se nos inicia el entorno virtual, cosa que comprobamos
+porque aparece su nombre al inicio del prompt del shell:
+
+.. code-block:: console
+
+   (app) vagrant@bullseye:/var/www/app$
+
+Usamos ``pipenv install flask gunicorn`` para instalar las dependencias
+necesarias para nuestro proyecto:
+
+.. code-block:: console
+
+  (app) vagrant@bullseye:/var/www/app$ pipenv install flask gunicorn
+
+Vamos ahora a crear la aplicación Flask más simple posible, a modo de
+PoC (*proof of concept* o prueba de concepto). El archivo que
+contendrá la aplicación propiamente dicha será ``application.py`` y
+``wsgi.py`` se encargará únicamente de iniciarla y dejarla corriendo:
+
+.. code-block:: console
+
+   (app) vagrant@bullseye:/var/www/app$ touch application.py wsgi.py
+
+Tras crear los archivos, los editamos.
+
+.. code-block:: python
+   :caption: Contenido de ``/var/www/app/application.py``
+
+   from flask import Flask
+
+   app = Flask(__name__)
+
+   @app.route('/')
+   def index():
+       '''Index page route'''
+       return '<h1>App desplegada</h1>'
+
+.. code-block:: python
+   :caption: Contenido de ``/var/www/app/wsgi.py``
+
+   from application import app
+
+   if __name__ == '__main__':
+      app.run(debug=False)
+
+Corramos ahora nuestra aplicación a modo de comprobación con el
+servidor web integrado de Flask. Si especificamos la dirección
+``0.0.0.0`` lo que le estamos diciendo al servidor es que escuche en
+todas sus interfaces, si las tuviera:
+
+.. code-block:: console
+   :caption: Salida del arranque del servidor.  En mi caso al estar en
+             Virtualbox tras una red NAT, debo en las opciones de red
+             de la tarjeta NAT de la máquina virtual redirigir los
+             puertos desde el anfitrión ``127.0.0.1`` en el puerto
+             ``5000`` a el invitado (MV) en el puerto ``5000``. Si tu
+             MV está en adaptador puente no hace falta.
+   :emphasize-lines: 8	     
+	     
+   (app) vagrant@bullseye:/var/www/app$ flask run --host '0.0.0.0'
+   * Serving Flask app 'wsgi.py'
+   * Debug mode: off
+   WARNING: This is a development server. Do not use it in a production deployment. Use a
+   production WSGI server instead.
+   * Running on all addresses (0.0.0.0)
+   * Running on http://127.0.0.1:5000
+   * Running on http://10.0.2.15:5000
+   Press CTRL+C to quit
+
+Ahora podremos acceder a la aplicación desde nuestro ordenador,
+nuestra máquina anfitrión, introduciendo en un navegador web:
+``http://IP-maq-virtual:5000`` aparecerá App desplegada.
+
+Tras la comprobación, paramos el servidor con ``CTRL+C``. Comprobemos
+ahora que Gunicorn funciona correctamente también. Si os ha funcionado
+el servidor de desarrollo de Flask, podéis usar el comando
+``gunicorn --workers 4 --bind 0.0.0.0:5000 wsgi:app`` para probar que
+la alicación funciona correctamente usando Gunicorn, accediendo con
+vuestro navegador de la misma forma que en el paso anterior:
+
+.. code-block:: console
+   :caption: Ejecutar gunicorn
+	     
+   (app) vagrant@bullseye:/var/www/app$ gunicorn --workers 4 --bind 0.0.0.0:5000 wsgi:app
+
+Donde:
+
+``--workers N``
+  establece el número de workers o hilos que queremos utilizar, como
+  ocurría con Node Express.  Dependerá del número de cores que le
+  hayamos dado a la CPU de nuestra máquina virtual.
+
+``--bind 0.0.0.0:5000``
+  hace que el servidor escuche peticiones por todas sus interfaces de
+  red y en el puerto 5000
+  
+``wsgi:app``
+  es el nombre del archivo con extensión .py y app es la instancia de
+  la aplicación Flask dentro del archivo.
+
+Todavía dentro de nuestro entorno virtual, debemos tomar nota de cual
+es el path o ruta desde la que se ejecuta ``gunicorn`` para poder
+configurar más adelante un servicio del sistema. Podemos averigurarlo
+así:
+
+.. code-block:: console
+
+   (app) vagrant@bullseye:/var/www/app$ which gunicorn
+   /home/vagrant/.local/share/virtualenvs/app-1lvW3LzD/bin/gunicorn
+
+.. warning::
+
+   Toma nota de la ruta pues nos hará falta más adelante para crear el
+   servicio de ``systemd`` para arrancar nuestra aplicación.
+
+.. note::
+
+   Y tras ello debemos salir de nuestro entorno virtual con el
+   sencillo comando ``exit`` (o ``deactivate``)
+
+Puesto que ya debemos tener instalado Nginx en nuestro sistema, lo
+iniciamos y comprobamos que su estado sea activo:
+
+.. code-block:: console
+		
+   sudo systemctl start nginx
+   sudo systemctl status nginx
+
+Ya fuera de nuestro entorno virtual, crearemos un archivo para que
+``systemd`` corra Gunicorn como un servicio del sistema más:
+
+.. code-block:: ini
+   :caption: Fichero ``/etc/systemd/system/flask_app.service``
+
+   [Unit]
+   Description=flask app service - App con flask y Gunicorn
+   After=network.target
+   [Service]
+   User=vagrant
+   Group=www-data
+   Environment="PATH=/home/vagrant/.local/share/virtualenvs/app-1lvW3LzD/bin"
+   WorkingDirectory=/var/www/app
+   ExecStart=/home/vagrant/.local/share/virtualenvs/app-1lvW3LzD/bin/gunicorn --workers 3 --bind unix:/var/www/app/app.sock wsgi:app
+
+   [Install]
+   WantedBy=multi-user.target
+
+Donde:
+
+User
+  establece el usuario que tiene permisos sobre el directorio del proyecto.
+
+Group
+  establece el grupo que tiene permisos sobre el directorio del proyecto.
+
+Environment
+  establece el directorio bin (donde se guardan los binarios
+  ejecutables) dentro del entorno virtual.  Lo vimos al hacer which
+  gunicorn dentro del entorno virtual de pipenv shell.
+
+WorkingDirectory
+  establece el directorio base donde reside nuestro proyecto		
+
+ExecStart
+  establece el path donde se encuentra el ejecutable de gunicorn
+  dentro del entorno virtual, así como las opciones y comandos con los
+  que se iniciará.
+
+.. warning::
+
+   Debéis cambiar los valores para que coincidan con los de vuestro
+   caso particular.
+
+Informaremos a ``systemd`` que hay un nuevo servicio:
+
+.. code-block:: console
+
+   sudo systemctl daemon-reload
+
+Ahora, como cada vez que se crea un servicio nuevo de ``systemd``, se
+habilita y se inicia:
+
+.. code-block:: console
+
+   systemctl enable flask_app
+   systemctl start flask_app
+
+Recordad que el nombre del servicio es el nombre del archivo que
+creastéis en el paso anterior.  Pasemos ahora a configurar Nginx, que
+es algo que ya deberíamos tener dominado de capítulos anteriores.
+
+Creamos un archivo con el nombre de nuestra aplicación y dentro
+estableceremos la configuración para ese sitio web. El archivo, como
+recordáis, debe estar en ``/etc/nginx/sites-available/app.conf`` y tras
+ello lo editamos para que quede:
+
+.. code-block:: nginx
+   :emphasize-lines: 3,5-6,10		
+   :caption: Fichero ``/etc/nginx/sites-available/app.conf``
+
+   server {
+     listen 80;
+     server_name app.izv www.app.izv;
+
+     access_log /var/log/nginx/app.access.log;
+     error_log /var/log/nginx/app.error.log;
+
+     location / {
+       include proxy_params;
+       proxy_pass http://unix:/var/www/app/app.sock;
+     }
+   } 	     
+
+``server_name``
+  Nombre del dominio, ya veremos más adelante como el DNS resolverá
+  este nombre para acceder a nuestra aplicación.
+
+``access_log`` y ``error_log``
+  Dónde estarán ubicados los logs de acceso y de errores.
+
+``proxy_pass``
+  Bloque donde se le indica a Nginx que haga de proxy inverso hacia el
+  socket creado en nuestra propia máquina por gunicorn para acceder a
+  nuestra aplicación Flask.
+
+Recordemos que ahora debemos crear un link simbólico del archivo de
+sitios webs disponibles al de sitios web activos:
+
+.. code-block:: console
+
+   sudo ln -s /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/
+
+Y nos aseguramos de que se ha creado dicho link simbólico:
+
+.. code-block:: console
+
+   ls -l /etc/nginx/sites-enabled/ | grep app.conf		
+
+Nos aseguramos de que la configuración de Nginx no contiene errores,
+reiniciamos Nginx y comprobamos que se estado es activo:
+
+.. code-block:: console
+   :caption: Comprobar sintáxis de la configuración de Nginx
+
+   sudo nginx -t
+
+.. code-block:: console
+   :caption: Rearrancamos el servidor
+
+   sudo systemctl restart nginx
+   sudo systemctl status nginx	     
+		
+Ya no podremos acceder por IP a nuestra aplicación ya que ahora está
+siendo servida por Gunicorn y Nginx, necesitamos acceder por su
+``server_name``. Puesto que aún no hemos tratado con el DNS, vamos a
+editar el archivo ``/etc/hosts`` de nuestra máquina anfitriona para
+que asocie la IP de la máquina virtual, a nuestro ``server_name``.
+
+Este archivo, en Linux, está en ``/etc/hosts`` y en Windows en
+``C:\Windows\System32\drivers\etc\hosts``
+
+Y deberemos añadirle la línea:
+
+.. code-block::
+   :caption: Sustituir la IP por la que tenga nuestro anfitrión o MV
+   
+   192.168.X.X app.izv www.app.izv
+
+El último paso es comprobar que todo el despliegue se ha realizado de
+forma correcta y está funcionando, para ello accedemos desde nuestra
+máquina anfitrión a http://app.izv/ o http://www.app.izv/
+
+Y debería mostraros la misma página que antes:
+
+   App desplegada

@@ -1,0 +1,16 @@
+Prerrequisitos
+--------------
+
+.. note::
+
+   Este despliegue se ha realizado con ``debian/bullseye64``. Durante
+   la práctica se mostrará el usuario vagrant en la máquina bullseye,
+   siendo el prompt ``vagrant@bullseye:$``. Esto no significa que
+   debas hacerlo bajo vagrant y que no puedas utilizar otro usuario.
+
+Necesitaremos un servidor Debian con los siguientes paquetes
+instalados:
+
+- Nginx
+- Gunicorn
+- Pipenv

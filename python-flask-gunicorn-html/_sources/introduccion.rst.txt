@@ -1,0 +1,141 @@
+Introducción
+------------
+
+¿Qué es un framework?
+^^^^^^^^^^^^^^^^^^^^^
+
+Actualmente en el desarrollo moderno de aplicaciones web se utilizan
+distintos Frameworks que son herramientas que nos dan un esquema de
+trabajo y una serie de utilidades y funciones que nos facilita y nos
+abstrae de la construcción de páginas web dinámicas.
+
+En general los frameworks están asociado a lenguajes de programación
+como por ejemplo Ruby on Rails a Ruby o Symphony a PHP. En el mundo de
+Python el más conocido es Django pero Flask es una opción que quizás
+no tenga una curva de aprendizaje tan elevada y nos posibilita la
+creación de aplicaciones web igual de complejas de las que se pueden
+crear en Django.
+
+Flask
+^^^^^
+
+En la actualidad existen muchas opciones para crear páginas web y
+muchos lenguajes (PHP, JAVA), y en este caso Flask nos permite crear
+de una manera muy sencilla aplicaciones web con Python.
+
+Flask es un micro Framework escrito en Python y concebido para
+facilitar el desarrollo de Aplicaciones Web bajo el patrón MVC.
+
+.. image:: images/flask.png
+   :width: 350
+   :align: center
+   :alt: Flask logo
+
+La palabra micro no designa a que sea un proyecto pequeño o que nos
+permita hacer páginas web pequeñas sino que al instalar Flask tenemos
+las herramientas necesarias para crear una aplicación web funcional
+pero si se necesita en algún momento una nueva funcionalidad hay un
+conjunto muy grande extensiones (plugins) que se pueden instalar con
+Flask que le van dotando de funcionalidad.
+
+De principio en la instalación no se tienen todas las funcionalidades
+que se pueden necesitar pero de una manera muy sencilla se pueden
+extender el proyecto con nuevas funcionalidades por medio de plugins.
+
+El patrón MVC es una manera o una forma de trabajar que permite
+diferenciar y separar lo que es el modelo de datos (los datos que van
+a tener la App que normalmente están guardados en BD), la vista
+(página HTML) y el controlador (donde se gestiona las peticiones de la
+app web).
+
+Gunicorn
+^^^^^^^^
+
+Cuando se implementa una aplicación web basada en Python, normalmente
+se tienen estas tres piezas:
+
+- Servidor web (Nginx, Apache).
+
+- Servidor de aplicaciones WSGI (Gunicorn, uWSGI, mod_wsgi, Waitress).
+
+- Aplicación web (Django, Flask, Pyramid, FastAPI).
+
+.. image:: images/gunicorn.png
+   :width: 350
+   :align: center
+   :alt: Gunicorn logo
+
+Los servidores web procesan y distribuyen las solicitudes de los
+navegadores y otros clientes y envían respuestas a los mismos.
+
+WSGI (Web Server Gateway Interface) proporciona un conjunto de reglas
+para estandarizar el comportamiento y la comunicación entre servidores
+web y aplicaciones web. Mediante el uso de servidores y aplicaciones
+web compatibles con WSGI, los desarrolladores pueden concentrar su
+tiempo y energía en el desarrollo de aplicaciones web en lugar de
+administrar la comunicación entre la aplicación y el servidor web.
+
+Finalmente, Gunicorn, que es la abreviatura de Green Unicorn, es un
+servidor de aplicaciones WSGI que se encuentra entre el servidor web y
+su aplicación web, gestionando la comunicación entre los dos. Acepta
+solicitudes del servidor y las traduce (a través de WSGI) en algo que
+la aplicación web puede entender antes de pasarla a la aplicación web
+real. Envía respuestas desde la aplicación web al servidor. También se
+encarga de ejecutar varias instancias de la aplicación web,
+reiniciándolas según sea necesario y distribuyendo solicitudes a
+instancias saludables.
+
+Gestor de paquetes pip
+^^^^^^^^^^^^^^^^^^^^^^
+
+pip es el comando para instalar paquetes de Python integrados en las
+fuentes desde la versión 3.4.
+
+Este comando automatiza la conexión al sitio https://pypi.org/, la
+descarga, la instalación e incluso la compilación del módulo
+solicitado.
+
+Además, se ocupa de las dependencias de cada paquete.
+
+Entornos virtuales en Python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Un entorno virtual es una forma de tener múltiples instancias
+paralelas del intérprete de Python, cada una con diferentes conjuntos
+de paquetes y diferentes configuraciones. Cada entorno virtual
+contiene una copia independiente del intérprete de Python, incluyendo
+copias de sus utilidades de soporte.
+
+Los paquetes instalados en cada entorno virtual sólo se ven en ese
+entorno virtual y en ningún otro.  Incluso los paquetes grandes y
+complejos con binarios dependientes de la plataforma pueden ser
+acorralados entre sí en entornos virtuales.
+
+De esta forma, tendremos entornos independientes entre sí, parecido a
+como ocurría con los directorios de los proyectos de Node.js. De este
+modo, los entornos virtuales de Python nos permiten instalar un
+paquete de Python en una ubicación aislada en lugar de instalarlo de
+manera global.
+
+Pipenv
+^^^^^^
+
+Pipenv es una herramienta que apunta a traer todo lo mejor del mundo
+de empaquetado (bundler, composer, npm, cargo, yarn, etc.) al mundo de
+Python.
+
+.. image:: images/pipenv.jpg
+   :width: 350
+   :align: center
+   :alt: Pipenv logo
+
+Automáticamente crea y maneja un entorno virtual para tus proyectos,
+también permite agregar/eliminar paquetes desde tu Pipfile así como
+como instalar/desinstalar paquetes. También genera lo más importante ,
+el archivo ``Pipfile.lock``, que es usado para producir determinado
+build.
+
+.. image:: images/pip.png
+   :align: center
+   :width: 350
+   :alt: Pip logo

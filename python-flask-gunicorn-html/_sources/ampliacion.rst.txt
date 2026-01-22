@@ -1,0 +1,29 @@
+Tarea de ampliación
+-------------------
+
+Repite todo el proceso con la aplicación del siguiente repositorio:
+https://github.com/Azure-Samples/msdocs-python-flask-webapp-quickstart
+
+Recuerda que deberás clonar el repositorio en tu directorio
+``/var/www``:
+
+.. code-block:: console
+
+   cd /var/www
+   git clone https://github.com/Azure-Samples/msdocs-python-flask-webapp-quickstart
+
+Y, **tras activar el entorno virtual dentro del directorio del
+repositorio clonado**, para instalar las dependencias del proyecto de la
+aplicación deberás hacer:
+
+.. code-block:: console
+		
+   pipenv install -r requirements.txt
+
+Y un último detalle, Gunicorn debe iniciarse ahora así:
+
+.. code-block:: console
+
+   gunicorn --workers 4 --bind 0.0.0.0:5000 wsgi:app
+
+Y el resto sería proceder tal y como hemos hecho en esta práctica.

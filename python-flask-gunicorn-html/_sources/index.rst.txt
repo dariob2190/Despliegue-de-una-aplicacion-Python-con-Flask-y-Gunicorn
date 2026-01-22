@@ -1,0 +1,25 @@
+
+Python, Flask y Gunicorn
+========================
+
+En esta práctica desplegaremos una aplicación escrita en el lenguaje
+`Python <https://es.python.org/>`_ con el framework `Flask
+<https://flask.palletsprojects.com/en/stable/>`_ utilizando el
+servidor de aplicaciones `Gunicorn <https://gunicorn.org/>`_.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contenidos:
+
+   prerrequisitos
+   introduccion
+   despliegue
+   ampliacion
+   evaluacion
+   referencias
+   
+Índices y tablas
+================
+
+* :ref:`genindex`
+* :ref:`search`

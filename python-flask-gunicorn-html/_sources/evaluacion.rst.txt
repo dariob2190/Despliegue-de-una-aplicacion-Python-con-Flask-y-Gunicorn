@@ -1,0 +1,18 @@
+Evaluación
+----------
+
+.. list-table:: Tabla de evaluación
+   :header-rows: 1
+		 
+   * - Criterio
+     - Puntuación
+   * - Despliegue correcto, completo y bien documentado del primer
+       ejemplo.
+     - 3 puntos
+   * - Despliegue correcto, completo y bien documentado de la tarea de ampliación
+     - 3 puntos
+   * - Se ha prestado especial atención al formato del documento, utilizando la
+       plantilla actualizada y haciendo un correcto uso del lenguaje técnico
+     - 2 puntos
+   * - Despliegue automatizado con Vagrant o ansible
+     - 2 puntos

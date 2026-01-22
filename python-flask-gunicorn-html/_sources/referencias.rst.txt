@@ -1,0 +1,10 @@
+Referencias
+-----------
+
+- `¿Qué es Flask? <https://openwebinars.net/blog/que-es-flask/>`_
+
+- `Deploy Flask The Easy Way With Gunicorn and Nginx!
+  <https://dev.to/brandonwallace/deploy-flask-the-easy-way-with-gunicorn-and-nginx-jgc>`_
+
+- `Deploy flask app with Nginx using Gunicorn
+  <https://faun.pub/deploy-flask-app-with-nginx-using-gunicorn-7fda4f50066a>`_
